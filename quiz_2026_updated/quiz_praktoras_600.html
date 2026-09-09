@@ -191,6 +191,10 @@
       .option {
         margin-bottom: 4px;
       }
+      /* Βασικό μέγεθος ερωτήσεων — αλλάζει από τα κουμπιά A-/A+ */
+      #questionsContainer {
+        font-size: 14px;
+      }
       .option button {
         width: 100%;
         text-align: left;
@@ -199,7 +203,7 @@
         border: 1px solid #ccc;
         background: #fafafa;
         cursor: pointer;
-        font-size: 14px;
+        font-size: inherit; /* κληρονομεί από #questionsContainer */
         -webkit-transition: background 0.15s ease, border-color 0.15s ease,
           transform 0.05s ease;
         transition: background 0.15s ease, border-color 0.15s ease,
@@ -15278,23 +15282,33 @@
 
       // === Μέγεθος γραμματοσειράς — αποθήκευση στο localStorage ===
       var FONT_MIN = 12;
-      var FONT_MAX = 22;
+      var FONT_MAX = 24;
       var FONT_STEP = 2;
       var FONT_DEFAULT = 14;
+
+      // Εφαρμογή μεγέθους γραμματοσειράς στο container ερωτήσεων
+      function applyFontSize(size) {
+        var container = document.getElementById("questionsContainer");
+        if (container) {
+          container.style.fontSize = size + "px";
+        }
+      }
 
       function initFontSize() {
         try {
           var saved = localStorage.getItem("quizFontSize");
           if (saved) {
-            document.documentElement.style.fontSize = saved + "px";
+            applyFontSize(Number(saved));
           }
         } catch(e) { /* iOS private browsing */ }
       }
 
       function changeFontSize(delta) {
-        var current = parseFloat(getComputedStyle(document.documentElement).fontSize) || FONT_DEFAULT;
+        var container = document.getElementById("questionsContainer");
+        var current = container ? parseFloat(getComputedStyle(container).fontSize) : FONT_DEFAULT;
+        current = current || FONT_DEFAULT;
         var next = Math.min(FONT_MAX, Math.max(FONT_MIN, current + delta));
-        document.documentElement.style.fontSize = next + "px";
+        applyFontSize(next);
         try { localStorage.setItem("quizFontSize", next); } catch(e) {}
       }
 
