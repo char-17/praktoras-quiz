@@ -65,9 +65,32 @@
       }
       /* iOS gap fallback: margin σε badges/buttons αν gap δεν υποστηρίζεται */
       .stats-left > * { margin: 2px 4px; }
-      /* Font buttons στο bar — κρυμμένα σε desktop (υπάρχουν στο stats-right) */
-      .font-btn-mobile {
+      /* Font button group — κρυμμένο σε desktop, εμφανίζεται σε mobile */
+      .font-group {
         display: none;
+      }
+      .font-group-btn {
+        -webkit-appearance: none;
+        appearance: none;
+        touch-action: manipulation;
+        background: white;
+        border: 1px solid #ddd;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        padding: 3px 10px;
+        min-width: 34px;
+        text-align: center;
+      }
+      /* Αριστερό κουμπί: στρογγυλό αριστερά */
+      .font-group-btn:first-child {
+        border-radius: 999px 0 0 999px;
+        border-right: none;
+      }
+      /* Δεξί κουμπί: στρογγυλό δεξιά */
+      .font-group-btn:last-child {
+        border-radius: 0 999px 999px 0;
       }
       .stats-right {
         display: -webkit-flex;
@@ -293,6 +316,11 @@
         border-color: #2a2a4a;
         color: #e0e0e0;
       }
+      body.dark .font-group-btn {
+        background: #16213e;
+        border-color: #2a2a4a;
+        color: #e0e0e0;
+      }
       body.dark .question-card {
         background: #16213e;
         border-color: #2a2a4a;
@@ -473,14 +501,10 @@
           right: 0;
           top: 2px;
         }
-        /* Εμφάνιση A-/A+ κουμπιών στο bar σε mobile */
-        .font-btn-mobile {
-          display: inline-block;
-          font-weight: 700;
-          min-width: 32px;
-          text-align: center;
-          padding: 3px 8px;
-          font-size: 13px;
+        /* Εμφάνιση A-/A+ button group σε mobile */
+        .font-group {
+          display: -webkit-inline-flex;
+          display: inline-flex;
         }
         /* Κρύψε το fixed theme toggle — υπάρχει στο mobile menu */
         .theme-toggle {
@@ -505,9 +529,11 @@
         <div class="badge">Σωστές: <span id="correctCount">0</span></div>
         <div class="badge">Λανθασμένες: <span id="wrongCount">0</span></div>
         <div class="badge">Σύνολο: <span id="totalCount"></span></div>
-        <!-- A-/A+ εμφανίζονται μόνο σε mobile, δίπλα στα badges -->
-        <button class="action-badge font-btn-mobile" id="fontDecBtnBar">A-</button>
-        <button class="action-badge font-btn-mobile" id="fontIncBtnBar">A+</button>
+        <!-- A-/A+ ομαδοποιημένα — εμφανίζονται μόνο σε mobile -->
+        <div class="font-group">
+          <button class="font-group-btn" id="fontDecBtnBar">A-</button>
+          <button class="font-group-btn" id="fontIncBtnBar">A+</button>
+        </div>
       </div>
       <!-- Δεξιά: action buttons (desktop) -->
       <div class="stats-right">
