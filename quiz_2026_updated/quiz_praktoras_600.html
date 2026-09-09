@@ -65,6 +65,10 @@
       }
       /* iOS gap fallback: margin σε badges/buttons αν gap δεν υποστηρίζεται */
       .stats-left > * { margin: 2px 4px; }
+      /* Font buttons στο bar — κρυμμένα σε desktop (υπάρχουν στο stats-right) */
+      .font-btn-mobile {
+        display: none;
+      }
       .stats-right {
         display: -webkit-flex;
         display: flex;
@@ -469,6 +473,15 @@
           right: 0;
           top: 2px;
         }
+        /* Εμφάνιση A-/A+ κουμπιών στο bar σε mobile */
+        .font-btn-mobile {
+          display: inline-block;
+          font-weight: 700;
+          min-width: 32px;
+          text-align: center;
+          padding: 3px 8px;
+          font-size: 13px;
+        }
         /* Κρύψε το fixed theme toggle — υπάρχει στο mobile menu */
         .theme-toggle {
           display: none;
@@ -486,12 +499,15 @@
     </div>
 
     <div class="stats">
-      <!-- Αριστερά: μετρητές -->
+      <!-- Αριστερά: μετρητές + font size buttons (mobile) -->
       <div class="stats-left">
         <div class="badge">Απαντημένες: <span id="answeredCount">0</span></div>
         <div class="badge">Σωστές: <span id="correctCount">0</span></div>
         <div class="badge">Λανθασμένες: <span id="wrongCount">0</span></div>
         <div class="badge">Σύνολο: <span id="totalCount"></span></div>
+        <!-- A-/A+ εμφανίζονται μόνο σε mobile, δίπλα στα badges -->
+        <button class="action-badge font-btn-mobile" id="fontDecBtnBar">A-</button>
+        <button class="action-badge font-btn-mobile" id="fontIncBtnBar">A+</button>
       </div>
       <!-- Δεξιά: action buttons (desktop) -->
       <div class="stats-right">
@@ -510,8 +526,6 @@
         <button class="action-badge" id="resetButtonMobile">Επανεκκίνηση</button>
         <button class="action-badge" id="statsButtonMobile">Στατιστικά</button>
         <button class="action-badge" id="clearStatsButtonMobile">Καθαρισμός στατιστικών</button>
-        <button class="action-badge" id="fontDecBtnMobile">A- Μικρότερα</button>
-        <button class="action-badge" id="fontIncBtnMobile">A+ Μεγαλύτερα</button>
         <button class="action-badge" id="themeToggleMobile">🌙 Dark mode</button>
       </div>
     </div>
@@ -15313,9 +15327,9 @@
       // Desktop
       addTapListener(document.getElementById("fontIncBtn"), function() { changeFontSize(FONT_STEP); });
       addTapListener(document.getElementById("fontDecBtn"), function() { changeFontSize(-FONT_STEP); });
-      // Mobile
-      addTapListener(document.getElementById("fontIncBtnMobile"), function() { closeMobileMenu(); changeFontSize(FONT_STEP); });
-      addTapListener(document.getElementById("fontDecBtnMobile"), function() { closeMobileMenu(); changeFontSize(-FONT_STEP); });
+      // Mobile bar buttons (A-/A+ δίπλα στα badges)
+      addTapListener(document.getElementById("fontIncBtnBar"), function() { changeFontSize(FONT_STEP); });
+      addTapListener(document.getElementById("fontDecBtnBar"), function() { changeFontSize(-FONT_STEP); });
 
       initFontSize();
 
