@@ -14991,6 +14991,9 @@
       // === Batch rendering — αποφυγή iOS Safari script timeout ===
       var BATCH_SIZE = 30; // ερωτήσεις ανά batch
 
+      // Αποθήκευση buttons ανά qIndex για restore αποθηκευμένων απαντήσεων
+      var allQuestionButtons = [];
+
       function createQuestionCard(q, qIndex) {
         var card = document.createElement("div");
         card.className = "question-card";
@@ -15036,6 +15039,9 @@
           buttons.push(btn);
         }
 
+        // Αποθήκευση buttons για restore
+        allQuestionButtons[qIndex] = buttons;
+
         card.appendChild(ul);
         return card;
       }
@@ -15043,6 +15049,7 @@
       function renderQuestions() {
         var container = document.getElementById("questionsContainer");
         container.innerHTML = "";
+        allQuestionButtons = [];
 
         // Φίλτρο: αν ενεργό, δείξε μόνο ερωτήσεις με ≥1 λάθος στο localStorage
         var stats = loadStats();
@@ -15060,6 +15067,9 @@
           questionState.push({ answered: false, isCorrect: null });
         }
 
+        // Φόρτωση αποθηκευμένων απαντήσεων session
+        var savedAnswers = loadSessionAnswers();
+
         // Batch rendering: φόρτωση σε ομάδες για αποφυγή iOS script timeout
         var batchIndex = 0;
 
@@ -15072,32 +15082,64 @@
           }
 
           container.appendChild(fragment);
+
+          // Restore αποθηκευμένων απαντήσεων για αυτό το batch
+          for (var k = batchIndex; k < end; k++) {
+            var qNum = String(filteredQuestions[k].number);
+            if (savedAnswers[qNum] !== undefined && allQuestionButtons[k]) {
+              applyAnswer(k, savedAnswers[qNum], allQuestionButtons[k], false);
+            }
+          }
+
           batchIndex = end;
 
           // Αν υπάρχουν κι άλλες ερωτήσεις, συνέχισε στο επόμενο frame
           if (batchIndex < filteredQuestions.length) {
             setTimeout(renderBatch, 0);
+          } else {
+            // Ενημέρωση μετρητών μετά το restore όλων
+            updateStats();
           }
         }
 
         renderBatch();
       }
 
-      function handleAnswer(qIndex, optIndex, buttons) {
+      // === Αποθήκευση/φόρτωση απαντήσεων session στο localStorage ===
+      function loadSessionAnswers() {
+        try {
+          var raw = localStorage.getItem("quizSessionAnswers");
+          return raw ? JSON.parse(raw) : {};
+        } catch(e) { return {}; }
+      }
+
+      function saveSessionAnswer(questionNumber, optIndex) {
+        var answers = loadSessionAnswers();
+        answers[String(questionNumber)] = optIndex;
+        try { localStorage.setItem("quizSessionAnswers", JSON.stringify(answers)); } catch(e) {}
+      }
+
+      function clearSessionAnswers() {
+        try { localStorage.removeItem("quizSessionAnswers"); } catch(e) {}
+      }
+
+      // Εφαρμογή απάντησης σε ερώτηση (χρησιμοποιείται και από handleAnswer και από restore)
+      function applyAnswer(qIndex, optIndex, buttons, saveToStorage) {
         var state = questionState[qIndex];
-        if (state.answered) {
-          return; // δεν επιτρέπεται αλλαγή απάντησης
-        }
+        if (state.answered) return;
 
         var question = currentQuestions[qIndex];
         var chosen = question.options[optIndex];
-
         var isCorrect = chosen.letter === question.correctLetter;
+
         state.answered = true;
         state.isCorrect = isCorrect;
 
-        // Αποθήκευση στατιστικού στο localStorage
-        saveQuestionStat(question.number, isCorrect);
+        // Αποθήκευση στατιστικού στο localStorage (μόνο σε νέα απάντηση, όχι σε restore)
+        if (saveToStorage) {
+          saveQuestionStat(question.number, isCorrect);
+          saveSessionAnswer(question.number, optIndex);
+        }
 
         for (var i = 0; i < buttons.length; i++) {
           buttons[i].classList.add("disabled");
@@ -15111,7 +15153,11 @@
         if (!isCorrect) {
           buttons[optIndex].classList.add("incorrect");
         }
+      }
 
+      function handleAnswer(qIndex, optIndex, buttons) {
+        if (questionState[qIndex].answered) return;
+        applyAnswer(qIndex, optIndex, buttons, true);
         updateStats();
       }
 
@@ -15211,12 +15257,14 @@
       // === Action handlers (κοινές για desktop & mobile) ===
       function doReset() {
         if (confirm("Είστε σίγουροι ότι θέλετε να ξεκινήσετε από την αρχή;")) {
+          clearSessionAnswers(); // καθαρισμός αποθηκευμένων απαντήσεων
           window.location.reload();
         }
       }
       function doClearStats() {
         if (confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε όλα τα στατιστικά;")) {
           try { localStorage.removeItem("quizStats"); } catch(e) {}
+          clearSessionAnswers(); // καθαρισμός αποθηκευμένων απαντήσεων
           closeStatsPanel();
         }
       }
