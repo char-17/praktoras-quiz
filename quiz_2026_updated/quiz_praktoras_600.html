@@ -15281,12 +15281,10 @@
       initTheme();
 
       // === Μέγεθος γραμματοσειράς — αποθήκευση στο localStorage ===
-      var FONT_MIN = 12;
-      var FONT_MAX = 24;
       var FONT_STEP = 2;
       var FONT_DEFAULT = 14;
 
-      // Εφαρμογή μεγέθους γραμματοσειράς στο container ερωτήσεων
+      // Εφαρμογή μεγέθους γραμματοσειράς στο container ερωτήσεων — χωρίς όριο
       function applyFontSize(size) {
         var container = document.getElementById("questionsContainer");
         if (container) {
@@ -15307,7 +15305,7 @@
         var container = document.getElementById("questionsContainer");
         var current = container ? parseFloat(getComputedStyle(container).fontSize) : FONT_DEFAULT;
         current = current || FONT_DEFAULT;
-        var next = Math.min(FONT_MAX, Math.max(FONT_MIN, current + delta));
+        var next = Math.max(8, current + delta); // ελάχιστο 8px μόνο για αναγνωσιμότητα
         applyFontSize(next);
         try { localStorage.setItem("quizFontSize", next); } catch(e) {}
       }
